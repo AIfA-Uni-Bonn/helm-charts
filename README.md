@@ -2,7 +2,7 @@
 
 This page is under construction, but we will serve a few installations:
 
-- overleaf community ediion with LDAP support and german fixes
+- overleaf community edition with LDAP support and german fixes
 - shibboleth-proxy container based on nginx
 
 ### Support or Contact
