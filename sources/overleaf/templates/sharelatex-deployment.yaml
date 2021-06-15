@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sharelatex
+  name: sharelatex
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      io.kompose.service: sharelatex
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.network/overleaf: "true"
+        io.kompose.service: sharelatex
+    spec:
+      nodeName: kubenode1
+      containers:
+      - env:
+        - name: EMAIL_CONFIRMATION_DISABLED
+          value: "true"
+        - name: ENABLED_LINKED_FILE_TYPES
+          value: url,project_file
+        - name: ENABLE_CONVERSIONS
+          value: "true"
+        - name: REDIS_HOST
+          value: redis
+        - name: SHARELATEX_APP_NAME
+          value: Overleaf Community Edition
+        - name: SHARELATEX_MONGO_URL
+          value: mongodb://mongo/sharelatex
+        - name: SHARELATEX_REDIS_HOST
+          value: redis
+        - name: TEXMFVAR
+          value: /var/lib/sharelatex/tmp/texmf-var
+        - name: SHARELATEX_NAV_TITLE
+          value: Overleaf Community Edition - AIfA University of Bonn
+        - name: SHARELATEX_ADMIN_EMAIL
+          value: ticket@astro.uni-bonn.de
+        - name: SHARELATEX_RIGHT_FOOTER
+          value: '[{"text": "<a href=\"https://ecampus.uni-bonn.de\">https://ecampus.uni-bonn.de</a>"} ]'
+        - name: SHARELATEX_LEFT_FOOTER
+          value: '[{"text": "Powered by <a href=\"https://www.sharelatex.com\">ShareLaTeX</a> 2021"},{"text": "<a href=\"https://jupyterhub-students.astro.uni-bonn.de\">AIfA Students JupyterHub</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href=\"mailto:ticket@astro.uni-bonn.de?subject=Problems%20with%20Overleaf\">Technical Support</a>"} ]'
+        - name: ADMIN_MAIL
+          value: "admin@astro.uni-bonn.de"
+        - name: MAIL_DOMAIN
+          value: "uni-bonn.de"
+        - name: LDAP_SERVER
+          value: "ldap://uniid2ldap.astro.uni-bonn.de"
+        - name: LDAP_UID
+          value: "uid"
+        - name: LDAP_REALM
+          value: "dc=UNI-BONN,dc=DE"
+        - name: SHARELATEX_SESSION_SECRET
+          value: "something_really_stupid_random"
+        - name: SHARELATEX_BEHIND_PROXY
+          value: "true"
+        - name: SHARELATEX_SECURE_COOKIE
+          value: "true"
+        - name: SHARELATEX_SITE_LANGUAGE
+          value: "en"
+        - name: SHARELATEX_LANG_DOMAIN_MAPPING 
+          value: |
+           {
+             "www": {
+                "lngCode": "en",
+                "url": "https:\/\/overleaf.astro.uni-bonn.de"
+             },
+             "de": {
+                "lngCode": "de",
+                "url": "https:\/\/overleaf-students.astro.uni-bonn.de"
+             }
+           }
+        image: aifajupyter/aifa-overleaf:release-2.6.1-6
+        imagePullPolicy: ""
+        name: sharelatex
+        ports:
+        - containerPort: 80
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/sharelatex
+          name: sharelatex-claim0
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: sharelatex-claim0
+        persistentVolumeClaim:
+          claimName: sharelatex-claim0
+status: {}
