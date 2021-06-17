@@ -24,7 +24,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "shibboleth-proxy.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -34,19 +33,25 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: 80
+            - name: https
+              containerPort: 443
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+          #livenessProbe:
+          #  httpGet:
+          #     path: /Shibboleth.sso/Status
+          #     port: 443
+          #     scheme: HTTP
+          #     httpHeaders:
+          #       - name: Host
+          #         value: "{{ .Values.name  }}"
+          #     initialDelaySeconds: 1
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: SERVERNAME
+              value: "{{ .Values.nginx.name }}"
+            - name: REMOTE
+              value: "{{ .Values.nginx.remote }}"
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
