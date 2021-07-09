@@ -52,6 +52,30 @@ spec:
               value: "{{ .Values.nginx.name }}"
             - name: REMOTE
               value: "{{ .Values.nginx.remote }}"
+          volumeMounts:
+            - name: "config"
+              mountPath: "/etc/shibboleth/shibboleth2.xml"
+              subPath: "shibboleth2.xml"
+            - name: "map"
+              mountPath: "/etc/shibboleth/attribute-map.xml"
+              subPath: "attribute-map.xml"
+            {{- range $name, $val := $.Values.shib.extra_data }}
+            - name: {{ $val.name | quote }}
+              mountPath: {{ $val.volume | quote }}
+            {{- end }}
+      volumes:
+        - name: "config"
+          configMap:
+            name: "{{ .Values.shib.config }}"
+        - name: "map"
+          configMap:
+            name: "{{ .Values.shib.map }}"
+        {{- range $name, $val := $.Values.shib.extra_data }}
+        - name: {{ $val.name | quote }}
+          configMap:
+            name: {{ $val.name | quote }}
+        {{- end }}
+
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

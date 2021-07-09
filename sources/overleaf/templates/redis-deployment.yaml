@@ -1,45 +1,53 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -c
-    kompose.version: 1.21.0 (992df58d8)
-  creationTimestamp: null
   labels:
-    io.kompose.service: redis
-  name: redis
+    {{- include "overleaf.labels" . | nindent 4 }}
+  name: redis-{{ include "overleaf.fullname" . }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: redis
+      {{- include "overleaf.selectorLabels" . | nindent 6 }}
+      app.overleaf.service: redis-{{ include "overleaf.fullname" . }}
   strategy:
     type: Recreate
   template:
     metadata:
+      {{- with .Values.mongo.podAnnotations }}
       annotations:
-        kompose.cmd: kompose convert -c
-        kompose.version: 1.21.0 (992df58d8)
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       creationTimestamp: null
       labels:
-        io.kompose.network/overleaf: "true"
-        io.kompose.service: redis
+        {{- include "overleaf.selectorLabels" . | nindent 8 }}
+        {{- include "overleaf.network" . | nindent 8 }}
+        app.overleaf.service: redis-{{ include "overleaf.fullname" . }}
     spec:
-      nodeName: kubenode1
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      nodeName: {{ .Values.mongo.nodeName }}
       containers:
-      - image: redis:5
-        imagePullPolicy: ""
+      - image: {{ .Values.redis.image.name }}:{{ .Values.redis.image.tag }}
+        imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
         name: redis
         ports:
         - containerPort: 6379
         resources: {}
+        {{ if .Values.redis.volumes.name }}
         volumeMounts:
         - mountPath: /data
-          name: redis-claim0
+          name: redis-data-volume
+	{{ end }}
       restartPolicy: Always
       serviceAccountName: ""
+      {{ if .Values.redis.volumes.name }}
       volumes:
-      - name: redis-claim0
+      - name: redis-data-volume
         persistentVolumeClaim:
           claimName: redis-claim0
+      {{ end }}
+
 status: {}

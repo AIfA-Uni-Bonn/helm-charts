@@ -1,34 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -c
-    kompose.version: 1.21.0 (992df58d8)
-  creationTimestamp: null
   labels:
-    io.kompose.service: mongo
-  name: mongo
+    {{- include "overleaf.labels" . | nindent 4 }}
+  name: mongo-{{ include "overleaf.fullname" . }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: mongo
+      {{- include "overleaf.selectorLabels" . | nindent 6 }}
+      app.overleaf.service: mongo-{{ include "overleaf.fullname" . }}
   strategy:
     type: Recreate
   template:
     metadata:
+      {{- with .Values.mongo.podAnnotations }}
       annotations:
-        kompose.cmd: kompose convert -c
-        kompose.version: 1.21.0 (992df58d8)
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       creationTimestamp: null
       labels:
-        io.kompose.network/overleaf: "true"
-        io.kompose.service: mongo
+        {{- include "overleaf.selectorLabels" . | nindent 8 }}
+	{{- include "overleaf.network" . | nindent 8 }}
+        app.overleaf.service: mongo-{{ include "overleaf.fullname" . }}
     spec:
-      nodeName: kubenode1
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      nodeName: {{ .Values.mongo.nodeName }}
       containers:
-      - image: mongo:latest
-        imagePullPolicy: ""
+      - image: {{ .Values.mongo.image.name }}:{{ .Values.mongo.image.tag }}
+        imagePullPolicy: {{ .Values.mongo.image.pullPolicy }}
         #livenessProbe:
         #  exec:
         #    command:
@@ -40,13 +43,18 @@ spec:
         ports:
         - containerPort: 27017
         resources: {}
+        {{ if .Values.mongo.volumes.name }}
         volumeMounts:
         - mountPath: /data/db
-          name: mongo-claim0
+          name: mongo-data-volume
+        {{ end }}
       restartPolicy: Always
       serviceAccountName: ""
+      {{ if .Values.mongo.volumes.name }}
       volumes:
-      - name: mongo-claim0
+      - name: mongo-data-volume
         persistentVolumeClaim:
-          claimName: mongo-claim0
+          claimName: {{ .Values.mongo.volumes.name }}
+      {{ end }}
+
 status: {}

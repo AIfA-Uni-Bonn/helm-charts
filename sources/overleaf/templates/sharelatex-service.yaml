@@ -3,7 +3,7 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    io.kompose.service: sharelatex
+    app.overleaf.service: sharelatex-{{ include "overleaf.fullname" . }}
   name: sharelatex
 spec:
   ports:
@@ -11,7 +11,7 @@ spec:
     port: 80
     targetPort: 80
   selector:
-    io.kompose.service: sharelatex
+    app.overleaf.service: sharelatex-{{ include "overleaf.fullname" . }}
   type: NodePort
 status:
   loadBalancer: {}

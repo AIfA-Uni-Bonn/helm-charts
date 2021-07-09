@@ -1,14 +1,13 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  creationTimestamp: null
-  name: overleaf
+  name: overleaf-{{ include "overleaf.fullname" . }}
 spec:
   ingress:
   - from:
     - podSelector:
-        matchLabels:
-          io.kompose.network/overleaf: "true"
+         matchLabels:
+           {{- include "overleaf.network" . | nindent 12 }}
   podSelector:
-    matchLabels:
-      io.kompose.network/overleaf: "true"
+     matchLabels:
+       {{- include "overleaf.network" . | nindent 8 }}

@@ -1,0 +1,39 @@
+imagePullSecrets: []
+
+
+sharelatex:
+   replicaCount: 1
+   nodeName: ""
+   nodeSelector: {}
+   podAnnotations: {}
+   image:
+      name: aifajupyter/overleaf-shibboleth
+      tag: 2.6.2-3
+      pullPolicy: IfNotPresent
+      #pullPolicy: Always  # for testing
+   volumes:
+      name: ""
+ 
+
+redis:
+   nodeName: ""
+   nodeSelector: {}
+   podAnnotations: {}
+   image:
+      name: redis
+      tag: 5
+      pullPolicy: IfNotPresent
+   volumes:
+      name: ""
+
+
+mongo:
+   nodeName: ""
+   nodeSelector: {}
+   podAnnotations: {}
+   image:
+      name: mongo
+      tag: 4.4.6
+      pullPolicy: IfNotPresent
+   volumes:
+      name: ""
